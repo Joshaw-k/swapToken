@@ -20,28 +20,28 @@ async function main() {
 
   const rollAmount = ethers.parseUnits("1000", 8);
 
-  //   await pevcoin.approve(
-  //     "0xde79380fbd39e08150adaa5c6c9de3146f53029e",
-  //     pevAmount
-  //   );
+  await pevcoin.approve(
+    "0xde79380fbd39e08150adaa5c6c9de3146f53029e",
+    pevAmount
+  );
 
-  //   await rollcoin.approve(
-  //     "0xde79380fbd39e08150adaa5c6c9de3146f53029e",
-  //     rollAmount
-  //   );
-  //   // console.log(swapContract);
-  //   console.log(
-  //     await pevcoin.allowance(
-  //       "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-  //       "0xde79380fbd39e08150adaa5c6c9de3146f53029e"
-  //     )
-  //   );
-  //   console.log(
-  //     await rollcoin.allowance(
-  //       "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-  //       "0xde79380fbd39e08150adaa5c6c9de3146f53029e"
-  //     )
-  //   );
+  await rollcoin.approve(
+    "0xde79380fbd39e08150adaa5c6c9de3146f53029e",
+    rollAmount
+  );
+  // console.log(swapContract);
+  console.log(
+    await pevcoin.allowance(
+      "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "0xde79380fbd39e08150adaa5c6c9de3146f53029e"
+    )
+  );
+  console.log(
+    await rollcoin.allowance(
+      "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "0xde79380fbd39e08150adaa5c6c9de3146f53029e"
+    )
+  );
   await swapContract.addLiquidity(
     ethers.parseUnits("100", 8),
     ethers.parseUnits("100", 8)
