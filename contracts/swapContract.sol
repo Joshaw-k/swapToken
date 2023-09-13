@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import {IMyERC20} from "./interface/IERC20.sol";
+// import {IMyERC20} from "./interface/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract SwapContract {
     address pevcoinAddr;
@@ -21,8 +22,8 @@ contract SwapContract {
     }
 
     function addLiquidity(uint256 amountA, uint256 amountB) external {
-        IMyERC20(pevcoinAddr).transferFrom(msg.sender,address(this),amountA);
-        IMyERC20(rollcoinAddr).transferFrom(msg.sender,address(this),amountB);
+        IERC20(pevcoinAddr).transferFrom(msg.sender,address(this),amountA);
+        IERC20(rollcoinAddr).transferFrom(msg.sender,address(this),amountB);
         pevcoinReserve += amountA;
         rollcoinReserve += amountB;
         cpmm(pevcoinReserve, rollcoinReserve);
@@ -33,10 +34,20 @@ contract SwapContract {
 
     function removeLiquidity(uint256 amountA, uint256 amountB) external {
         LiquidityProvider storage provider = liquidityProvider[msg.sender];
-        IMyERC20(pevcoinAddr).transfer(msg.sender,amountA);
-        IMyERC20(rollcoinAddr).transfer(msg.sender,amountB);
+        require(
+            provider.pevcoinAmount >= amountA,
+            "Insufficient ammount of pevcoin in Liquidity Pool"
+        );
+        require(
+            provider.rollcoinAmount >= amountB,
+            "Insufficient ammount of rollcoin in Liquidity Pool"
+        );
+        bool successA = IERC20(pevcoinAddr).transfer(msg.sender,amountA);
+        require(successA, "Failed to remove liquidity");
+        bool successB = IERC20(rollcoinAddr).transfer(msg.sender,amountB);
+        require(successB, "Failed to remove liquidity");
         pevcoinReserve -= amountA;
-        rollcoinReserve += amountB;
+        rollcoinReserve -= amountB;
         cpmm(pevcoinReserve, rollcoinReserve);
         provider.pevcoinAmount -= amountA;
         provider.rollcoinAmount -= amountB;
@@ -46,43 +57,42 @@ contract SwapContract {
        totalReserve = _pevcoinReserve * _rollcoinReserve;
     }
 
-    function amountPevcoinToReceive(uint amountIn,uint amountOutMin) public view returns(uint amountToReceive){
-        amountToReceive = pevcoinReserve - (totalReserve/(rollcoinReserve-amountIn));
+    function amountPevcoinToReceive(uint amountIn) public view returns(uint amountToReceive){
+        amountToReceive = pevcoinReserve - (totalReserve/(rollcoinReserve+amountIn));
         }
 
-    function amountrollcoinToReceive(uint amountIn,uint amountOutMin) public view returns(uint amountToReceive){
-        amountToReceive = rollcoinReserve - (totalReserve/(pevcoinReserve-amountIn));
+    function amountRollcoinToReceive(uint amountIn) public view returns(uint amountToReceive){
+        amountToReceive = rollcoinReserve - (totalReserve/(pevcoinReserve+amountIn));
         }
 
     function swapPevtokenForRollTokens(
         uint amountIn,
-        uint amountOutMin,
         address to
     ) public {
         require(amountIn >0, "No zero amountin");
-        uint balance = IMyERC20(pevcoinAddr).balanceOf(msg.sender);
+        uint balance = IERC20(pevcoinAddr).balanceOf(msg.sender);
         require(balance >0, "No zero amountin");
-        IMyERC20(pevcoinAddr).transferFrom(msg.sender, address(this), amountIn);
-        uint amountToReceive = amountPevcoinToReceive(amountIn,amountOutMin);
-        bool success = IMyERC20(rollcoinAddr).transfer(to,amountToReceive);
+        IERC20(pevcoinAddr).transferFrom(msg.sender, address(this), amountIn);
+        uint amountToReceive = amountPevcoinToReceive(amountIn);
+
+        bool success = IERC20(rollcoinAddr).transfer(to,amountToReceive);
         require(success, "could not transfer");
         pevcoinReserve += amountIn;
-        rollcoinReserve -= amountOutMin;
+        rollcoinReserve -= amountToReceive;
     }
 
     function swapRolltokenForPevTokens(
         uint amountIn,
-        uint amountOutMin,
         address to
     ) public {
         require(amountIn >0, "No zero amountin");
-        uint balance = IMyERC20(pevcoinAddr).balanceOf(msg.sender);
+        uint balance = IERC20(pevcoinAddr).balanceOf(msg.sender);
         require(balance >0, "No zero amountin");
-        IMyERC20(rollcoinAddr).transferFrom(msg.sender, address(this), amountIn);
-        uint amountToReceive = amountPevcoinToReceive(amountIn,amountOutMin);
-        bool success = IMyERC20(pevcoinAddr).transfer(to,amountToReceive);
+        IERC20(rollcoinAddr).transferFrom(msg.sender, address(this), amountIn);
+        uint amountToReceive = amountRollcoinToReceive(amountIn);
+        bool success = IERC20(pevcoinAddr).transfer(to,amountToReceive);
         require(success, "could not transfer");
         pevcoinReserve += amountIn;
-        rollcoinReserve -= amountOutMin;
+        rollcoinReserve -= amountToReceive;
     }
 }

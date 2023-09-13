@@ -2,8 +2,8 @@ import { ethers } from "hardhat";
 
 async function main() {
   const swapContract = await ethers.deployContract("SwapContract", [
-    "0x840748f7fd3ea956e5f4c88001da5cc1abcbc038",
-    "0x1befe2d8417e22da2e0432560ef9b2ab68ab75ad",
+    "0xF3e110Af5988CE66ac4e493B081bAfBB6caA001F",
+    "0xC5680Dba8306d229DB2bfaBde29eB6064d0EE5B6",
   ]);
   swapContract.waitForDeployment();
 
@@ -16,6 +16,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-// 0x840748f7fd3ea956e5f4c88001da5cc1abcbc038;
-// 0x1befe2d8417e22da2e0432560ef9b2ab68ab75ad;
-// 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266;

@@ -3,50 +3,101 @@ import { ethers } from "hardhat";
 async function main() {
   const swapContract = await ethers.getContractAt(
     "ISwap",
-    "0xAc045B906ea570938BF937291515Be31B948c9c3"
+    "0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"
   );
 
   const pevcoin = await ethers.getContractAt(
-    "IMyERC20",
-    "0x893B25C508F0486Cd2C99b45a1EEA397784deF57"
+    "IERC20",
+    "0xF3e110Af5988CE66ac4e493B081bAfBB6caA001F"
   );
 
   const rollcoin = await ethers.getContractAt(
-    "IMyERC20",
-    "0x9A425368a516c6ab1a51a8659906D8eC2Def048c"
+    "IERC20",
+    "0xC5680Dba8306d229DB2bfaBde29eB6064d0EE5B6"
   );
 
-  const pevAmount = ethers.parseUnits("1000", 8);
+  const pevAmount = ethers.parseEther("10000");
 
-  const rollAmount = ethers.parseUnits("1000", 8);
+  const rollAmount = ethers.parseEther("10000");
+
+  // Approving the Swap Contract
 
   await pevcoin.approve(
-    "0xAc045B906ea570938BF937291515Be31B948c9c3",
+    "0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B",
     pevAmount
   );
 
   await rollcoin.approve(
-    "0xAc045B906ea570938BF937291515Be31B948c9c3",
+    "0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B",
     rollAmount
   );
-  // console.log(swapContract);
+
+  // Returning the allowance
   console.log(
     await pevcoin.allowance(
       "0xb5119738bb5fe8be39ab592539eaa66f03a77174",
-      "0xAc045B906ea570938BF937291515Be31B948c9c3"
+      "0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"
     )
   );
   console.log(
     await rollcoin.allowance(
       "0xb5119738bb5fe8be39ab592539eaa66f03a77174",
-      "0xde79380fbd39e08150adaa5c6c9de3146f53029e"
+      "0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"
     )
   );
-  await swapContract.addLiquidity(
-    ethers.parseUnits("100", 8),
-    ethers.parseUnits("100", 8)
+
+  //balance of contract before adding liquidity
+  console.log(
+    await pevcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"),
+    await rollcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B")
   );
-  await swapContract.swapPevtokenForRollTokens();
+
+  //Adding Liquidity
+  await swapContract.addLiquidity(
+    ethers.parseEther("1000"),
+    ethers.parseEther("1000")
+  );
+  //balance of contract after adding liquidity
+  console.log(
+    await pevcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"),
+    await rollcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B")
+  );
+
+  //Adding Liquidity
+  await swapContract.removeLiquidity(
+    ethers.parseEther("50"),
+    ethers.parseEther("50")
+  );
+
+  //balance of contract after removing liquidity
+  console.log(
+    await pevcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"),
+    await rollcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B")
+  );
+
+  //swaping Rolltokens For PevTokens
+  await swapContract.swapRolltokenForPevTokens(
+    ethers.parseEther("100"),
+    "0xe26C94adb17e135a09478c5f41D21af338345DDD"
+  );
+
+  //balance of swap contract and to address after swaping tokens
+  console.log(
+    await pevcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"),
+    await rollcoin.balanceOf("0xe26C94adb17e135a09478c5f41D21af338345DDD")
+  );
+
+  //swaping Pevtoken For RollTokens
+  await swapContract.swapPevtokenForRollTokens(
+    ethers.parseEther("100"),
+    "0xe26C94adb17e135a09478c5f41D21af338345DDD"
+  );
+
+  //balance of swap contract and to address after swaping tokens
+  console.log(
+    await pevcoin.balanceOf("0xb080dd1a54488B0e1d792f1d8Fb6f4241dAf6F6B"),
+    await rollcoin.balanceOf("0xe26C94adb17e135a09478c5f41D21af338345DDD")
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
@@ -55,6 +106,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-// 0x840748f7fd3ea956e5f4c88001da5cc1abcbc038;
-// 0x1befe2d8417e22da2e0432560ef9b2ab68ab75ad;
-// 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266;

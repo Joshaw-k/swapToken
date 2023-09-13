@@ -6,12 +6,10 @@ interface ISwap {
      function removeLiquidity(uint256 amountA, uint256 amountB) external;
      function swapPevtokenForRollTokens(
         uint amountIn,
-        uint amountOutMin,
         address to
     ) external;
     function swapRolltokenForPevTokens(
         uint amountIn,
-        uint amountOutMin,
         address to
     ) external;
 }
